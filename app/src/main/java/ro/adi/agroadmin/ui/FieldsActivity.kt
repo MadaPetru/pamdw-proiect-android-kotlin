@@ -2,6 +2,7 @@ package ro.adi.agroadmin.ui
 
 import android.content.Intent
 import android.os.Bundle
+import android.widget.Button
 import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
@@ -50,7 +51,16 @@ class FieldsActivity : AppCompatActivity() {
         card.findViewById<TextView>(R.id.tvArea).text = "Area: ${field.area}"
         card.findViewById<TextView>(R.id.tvDistance).text = "Distance from farm: ${field.distance}"
         card.findViewById<TextView>(R.id.tvPlant).text = "Current plant: ${field.plant}"
+
+        val seeFieldButton = card.findViewById<Button>(R.id.seeFieldButton)
+        seeFieldButton.setOnClickListener {
+            val intent = Intent(this, FieldActivity::class.java)
+            intent.putExtra("field", field)
+            startActivity(intent)
+        }
+
         fieldList.addView(card)
     }
+
 }
 
