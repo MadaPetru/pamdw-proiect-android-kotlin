@@ -23,6 +23,22 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <activity
+            android:name=".ui.HomeActivity"
+            android:exported="false"
+            android:theme="@style/Theme.AgroAdmin" />
+        <activity
+            android:name=".ui.FieldsActivity"
+            android:exported="false"
+            android:theme="@style/Theme.AgroAdmin" />
+        <activity
+            android:name=".ui.LoginActivity"
+            android:exported="false"
+            android:theme="@style/Theme.AgroAdmin" />
+        <activity
+            android:name=".ui.RegisterActivity"
+            android:exported="false"
+            android:theme="@style/Theme.AgroAdmin" />
     </application>
 
 </manifest>

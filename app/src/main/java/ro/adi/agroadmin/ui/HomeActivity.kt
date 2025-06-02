@@ -1,5 +1,6 @@
 package ro.adi.agroadmin.ui
 
+import android.content.Intent
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import com.github.mikephil.charting.charts.LineChart
@@ -9,6 +10,7 @@ import com.github.mikephil.charting.components.YAxis
 import com.github.mikephil.charting.data.*
 import com.github.mikephil.charting.formatter.IndexAxisValueFormatter
 import com.github.mikephil.charting.utils.ColorTemplate
+import com.google.android.material.bottomnavigation.BottomNavigationView
 import ro.adi.agroadmin.R
 
 class HomeActivity : AppCompatActivity() {
@@ -25,6 +27,19 @@ class HomeActivity : AppCompatActivity() {
 
         setupChart(fieldsChart, listOf("B", "Test"), listOf(200f, 2800f), listOf(200f, 3600f))
         setupChart(operationsChart, listOf("A", "semănat", "Arat"), listOf(150f, 3200f, 200f), listOf(100f, 3300f, 180f))
+
+        val bottomNav = findViewById<BottomNavigationView>(R.id.bottomNavigation)
+        bottomNav.selectedItemId = R.id.nav_home
+        bottomNav.setOnItemSelectedListener { item ->
+            when (item.itemId) {
+                R.id.nav_fields -> {
+                    startActivity(Intent(this, FieldsActivity::class.java))
+                    true
+                }
+                R.id.nav_home -> true // Already on Home
+                else -> false
+            }
+        }
     }
 
     private fun setupChart(chart: LineChart, labels: List<String>, costValues: List<Float>, revenueValues: List<Float>) {

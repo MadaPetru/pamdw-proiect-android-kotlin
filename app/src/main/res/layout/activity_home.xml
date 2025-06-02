@@ -105,11 +105,11 @@
         android:layout_height="200dp"
         android:layout_margin="8dp" />
 
-<!--    &lt;!&ndash; Bottom Navigation &ndash;&gt;-->
-<!--    <com.google.android.material.bottomnavigation.BottomNavigationView-->
-<!--        android:id="@+id/bottomNavigation"-->
-<!--        android:layout_width="match_parent"-->
-<!--        android:layout_height="wrap_content"-->
-<!--        android:background="#66CDAA"-->
-<!--        app:menu="@menu/bottom_nav_menu" />-->
+    <!-- Bottom Navigation -->
+    <com.google.android.material.bottomnavigation.BottomNavigationView
+        android:id="@+id/bottomNavigation"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="#87CEEB"
+        app:menu="@menu/bottom_nav_menu" />
 </LinearLayout>
