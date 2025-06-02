@@ -1,3 +1,8 @@
 <resources>
     <string name="app_name">AgroAdmin</string>
+    <string-array name="currency_array">
+        <item>USD</item>
+        <item>EUR</item>
+        <item>RON</item>
+    </string-array>
 </resources>
