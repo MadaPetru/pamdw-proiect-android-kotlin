@@ -51,8 +51,13 @@
         android:text="333"
         android:textSize="14sp" />
 
-    <TextView android:layout_width="0dp" android:layout_weight="1"
-        android:text="RON" android:gravity="center" android:textSize="14sp" android:layout_height="30dp"/>
+    <TextView
+        android:layout_width="0dp"
+        android:layout_height="30dp"
+        android:layout_weight="1"
+        android:gravity="center"
+        android:text="🗑️"
+        android:textSize="14sp" />
 
     <TextView android:layout_width="wrap_content"
         android:text="✏️" android:textSize="18sp" android:layout_height="30dp"/>

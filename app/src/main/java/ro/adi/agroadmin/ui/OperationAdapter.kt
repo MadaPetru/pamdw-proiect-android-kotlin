@@ -14,7 +14,6 @@ class OperationAdapter(private val operations: List<Operation>) :
     class OperationViewHolder(val view: View) : RecyclerView.ViewHolder(view) {
         val type = view.findViewById<TextView>(R.id.tvType)
         val cost = view.findViewById<TextView>(R.id.tvCost)
-        val plant = view.findViewById<TextView>(R.id.tvPlant)
         val date = view.findViewById<TextView>(R.id.tvDate)
         val rev = view.findViewById<TextView>(R.id.tvRev)
         val cur = view.findViewById<TextView>(R.id.tvCur)
@@ -30,7 +29,6 @@ class OperationAdapter(private val operations: List<Operation>) :
         val op = operations[position]
         holder.type.text = op.type
         holder.cost.text = op.cost.toString()
-        holder.plant.text = op.plant.toString()
         holder.date.text = op.date
         holder.rev.text = op.revenue
         holder.cur.text = op.currency

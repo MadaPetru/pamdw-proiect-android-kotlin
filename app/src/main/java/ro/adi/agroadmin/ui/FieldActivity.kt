@@ -1,10 +1,12 @@
 package ro.adi.agroadmin.ui
 
+import android.content.Intent
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import android.widget.TextView
+import com.google.android.material.bottomnavigation.BottomNavigationView
 import ro.adi.agroadmin.R
 import ro.adi.agroadmin.data.Field
 import ro.adi.agroadmin.data.Operation
@@ -16,20 +18,17 @@ class FieldActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setTheme(R.style.Theme_AgroAdmin) // Ensure you're using AppCompat
+        setTheme(R.style.Theme_AgroAdmin)
         setContentView(R.layout.activity_field)
 
         val field = intent.getParcelableExtra<Field>("field")
-        field?.let {
-            findViewById<TextView>(R.id.tvFieldName).text = it.name
-            findViewById<TextView>(R.id.tvArea).text = "Area: ${it.area}"
-            findViewById<TextView>(R.id.tvDistance).text = "Distance: ${it.distance}"
-            findViewById<TextView>(R.id.tvPlant).text = "Plant: ${it.plant}"
+        if (field == null) {
+            // Handle the error, e.g., finish the activity or show a message
+            finish()
+            return
         }
 
-
-        val fieldNameText: TextView = findViewById(R.id.tvFieldName)
-        fieldNameText.text = "Field: B"  // Dynamically update if needed
+        findViewById<TextView>(R.id.tvFieldName).text = "Field: ${field.name}"
 
         recyclerView = findViewById(R.id.rvOperations)
         recyclerView.layoutManager = LinearLayoutManager(this)
@@ -40,5 +39,20 @@ class FieldActivity : AppCompatActivity() {
 
         adapter = OperationAdapter(operations)
         recyclerView.adapter = adapter
+
+        val bottomNav = findViewById<BottomNavigationView>(R.id.bottomNavigation)
+        bottomNav.setOnItemSelectedListener { item ->
+            when (item.itemId) {
+                R.id.nav_home -> {
+                    startActivity(Intent(this, HomeActivity::class.java))
+                    true
+                }
+                R.id.nav_fields -> {
+                    startActivity(Intent(this, FieldsActivity::class.java))
+                    true
+                }
+                else -> false
+            }
+        }
     }
 }
