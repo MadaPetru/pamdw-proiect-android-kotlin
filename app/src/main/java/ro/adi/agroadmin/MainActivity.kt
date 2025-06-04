@@ -5,6 +5,7 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.runtime.*
+import com.google.firebase.FirebaseApp
 import com.google.firebase.auth.FirebaseAuth
 import ro.adi.agroadmin.ui.HomeActivity
 import ro.adi.agroadmin.ui.LoginActivity
@@ -27,7 +28,7 @@ class MainActivity : ComponentActivity() {
 
     private fun checkIfAuthenticated(): Boolean {
         return false
-//        val user = FirebaseAuth.getInstance().currentUser
-//        return user != null
+        val user = FirebaseAuth.getInstance().currentUser
+        return user != null
     }
 }

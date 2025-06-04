@@ -4,11 +4,12 @@ import android.os.Parcelable
 import kotlinx.parcelize.Parcelize
 
 @Parcelize
-data class Operation(
+data class OperationChartDto(
     val type: String,
-    val cost: Int,
-    val plant: Int,
+    val cost: Double,
+    val plant: String,
     val date: String,
-    val revenue: String,
+    val revenue: Double,
+    val fieldName: String,
     val currency: String
-):Parcelable
+): Parcelable

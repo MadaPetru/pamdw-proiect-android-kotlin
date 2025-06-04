@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:padding="20dp"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@android:color/white">
+
+    <TextView
+        android:id="@+id/dialogTitle"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Operation"
+        android:gravity="center"
+        android:textSize="20sp"
+        android:textStyle="bold"
+        android:paddingBottom="10dp" />
+
+    <EditText
+        android:id="@+id/operationType"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Type (e.g. Sow, Harvest)"
+        android:background="#E0FFFF"
+        android:padding="10dp"
+        android:layout_marginBottom="8dp" />
+
+    <EditText
+        android:id="@+id/operationCost"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Cost"
+        android:background="#E0FFFF"
+        android:inputType="numberDecimal"
+        android:padding="10dp"
+        android:layout_marginBottom="8dp" />
+
+    <EditText
+        android:id="@+id/operationPlant"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Plant"
+        android:background="#E0FFFF"
+        android:padding="10dp"
+        android:layout_marginBottom="8dp" />
+
+    <EditText
+        android:id="@+id/operationDate"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Date (YYYY-MM-DD)"
+        android:background="#E0FFFF"
+        android:inputType="date"
+        android:padding="10dp"
+        android:layout_marginBottom="8dp" />
+
+    <EditText
+        android:id="@+id/operationRevenue"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Revenue"
+        android:background="#E0FFFF"
+        android:inputType="numberDecimal"
+        android:padding="10dp"
+        android:layout_marginBottom="8dp" />
+
+    <Spinner
+        android:id="@+id/operationCurrency"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="#E0FFFF"
+        android:layout_marginBottom="16dp" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="end">
+
+        <Button
+            android:id="@+id/cancelBtn"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Cancel"
+            android:background="@android:color/darker_gray"
+            android:textColor="@android:color/black" />
+
+        <Button
+            android:id="@+id/saveBtn"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Save"
+            android:layout_marginStart="16dp"
+            android:background="#90EE90"
+            android:textColor="@android:color/black" />
+    </LinearLayout>
+</LinearLayout>
