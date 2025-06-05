@@ -14,13 +14,16 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FieldPath
 import com.google.firebase.firestore.FirebaseFirestore
 import ro.adi.agroadmin.R
 import ro.adi.agroadmin.data.Field
+import ro.adi.agroadmin.ui.common.AppHeaderView
 
 class FieldsActivity : AppCompatActivity() {
 
     private lateinit var fieldList: LinearLayout
+    private lateinit var searchField: EditText
 
     override fun onResume() {
         super.onResume()
@@ -38,37 +41,11 @@ class FieldsActivity : AppCompatActivity() {
             swipeRefresh.isRefreshing = false
         }
 
-        val auth = FirebaseAuth.getInstance() // Initialize FirebaseAuth
-        val logoutButton = findViewById<Button>(R.id.lockButton) // Correct ID for the lock button
-        logoutButton.setOnClickListener {
-            showConfirmationDialog("Are you sure you want to log out?") {
-                auth.signOut() // Sign out from Firebase
-                Toast.makeText(this, "Logged out successfully!", Toast.LENGTH_SHORT).show()
-
-                // Redirect to your LoginActivity or Splash screen
-                val intent = Intent(this, LoginActivity::class.java) // Replace LoginActivity with your actual login screen
-                intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK // Clear back stack
-                startActivity(intent)
-                finish() // Finish the current activity
-            }
-        }
-
-
         val createButton = findViewById<Button>(R.id.btnCreateField)
 
         createButton.setOnClickListener {
             Log.e("FieldsActivity", "Create button clicked")
             showFieldDialog()
-        }
-
-        val user = FirebaseAuth.getInstance().currentUser
-        val emailTextView = findViewById<TextView>(R.id.userEmail)
-
-        if (user != null) {
-            // Show email or displayName if available
-            emailTextView.text = user.displayName ?: user.email ?: "Unknown user"
-        } else {
-            emailTextView.text = "Not logged in"
         }
 
         fieldList = findViewById(R.id.fieldList)
@@ -104,7 +81,7 @@ class FieldsActivity : AppCompatActivity() {
         val deleteFieldButton = card.findViewById<Button>(R.id.deleteFieldButton)
         deleteFieldButton.setOnClickListener {
             showConfirmationDialog("Are you sure you want to delete this field?") {
-//                deleteFieldFromFirestore(field)
+                deleteFieldFromFirestore(field)
             }
         }
 
@@ -116,6 +93,35 @@ class FieldsActivity : AppCompatActivity() {
         }
 
         fieldList.addView(card)
+    }
+
+    private fun deleteFieldFromFirestore(field: Field) {
+        val userEmail = FirebaseAuth.getInstance().currentUser?.email
+        if (userEmail == null) {
+            Toast.makeText(this, "Error: User not logged in.", Toast.LENGTH_SHORT).show()
+            return
+        }
+
+        if (field.id.isEmpty()) {
+            Toast.makeText(this, "Error: Cannot delete field, ID is missing.", Toast.LENGTH_SHORT).show()
+            return
+        }
+
+        val db = FirebaseFirestore.getInstance()
+        db.collection("users")
+            .document(userEmail)
+            .collection("fields")
+            .document(field.id) // Use the field's stored ID to delete the specific document
+            .delete()
+            .addOnSuccessListener {
+                Toast.makeText(this, "Field '${field.name}' deleted successfully!", Toast.LENGTH_SHORT).show()
+                // After deletion, refresh the list to reflect the change
+                loadFieldsFromFirestore()
+            }
+            .addOnFailureListener { e ->
+                Toast.makeText(this, "Error deleting field: ${e.message}", Toast.LENGTH_LONG).show()
+                Log.e("FieldsActivity", "Error deleting field: ${e.message}", e)
+            }
     }
 
     private fun loadFieldsFromFirestore() {
@@ -133,6 +139,7 @@ class FieldsActivity : AppCompatActivity() {
                     Log.e("FieldsActivity", "Loading fields for user: $userEmail")
                     for (document in result) {
                         val field = document.toObject(Field::class.java)
+                        Log.e("load fields"," Field loaded: ${field.name} with ID: ${field.id}")
                         addFieldCard(field)
                     }
                     Log.e("FieldsActivity", "Fields loaded successfully")
@@ -174,7 +181,7 @@ class FieldsActivity : AppCompatActivity() {
 
 
     private fun showFieldDialog(fieldToEdit: Field? = null) {
-        Log.e("ss","ss");
+        Log.e("showFieldDialog", "Called with fieldToEdit: ${fieldToEdit?.id ?: "null"}") // Improved log
         val dialogView = LayoutInflater.from(this).inflate(R.layout.modal_field, null)
         val dialog = AlertDialog.Builder(this)
             .setView(dialogView)
@@ -196,7 +203,7 @@ class FieldsActivity : AppCompatActivity() {
             distanceEdit.setText(fieldToEdit.distance.toString())
             plantEdit.setText(fieldToEdit.plant)
         } else {
-            title.text = "Field"
+            title.text = "Add New Field" // Changed from "Field" for clarity
         }
 
         cancelBtn.setOnClickListener {
@@ -214,33 +221,56 @@ class FieldsActivity : AppCompatActivity() {
                 return@setOnClickListener
             }
 
-            val field = Field(name, area, distance, plant)
-
             val db = FirebaseFirestore.getInstance()
             val userEmail = FirebaseAuth.getInstance().currentUser?.email
 
             if (userEmail != null) {
-                db.collection("users")
+                val userFieldsCollection = db.collection("users")
                     .document(userEmail)
                     .collection("fields")
-                    .add(field)
-                    .addOnSuccessListener {
-                        Toast.makeText(this, "Field saved", Toast.LENGTH_SHORT).show()
-                        addFieldCard(field) // Add to UI list
-                        dialog.dismiss()
-                    }
-                    .addOnFailureListener { e ->
-                        Toast.makeText(this, "Error saving field: ${e.message}", Toast.LENGTH_LONG).show()
-                    }
+
+                if (fieldToEdit == null) {
+                    // This is for ADDING a new field
+                    // 1. Get a reference to a new document, which generates the ID locally
+                    val newDocRef = userFieldsCollection.document()
+                    val newFieldId = newDocRef.id // This is the auto-generated ID
+
+                    // 2. Create the Field object with the generated ID
+                    val newField = Field(newFieldId, name, area, distance, plant)
+
+                    // 3. Set the data to the document using the newDocRef
+                    newDocRef.set(newField)
+                        .addOnSuccessListener {
+                            Toast.makeText(this, "Field added successfully!", Toast.LENGTH_SHORT).show()
+                            loadFieldsFromFirestore() // Reload all fields to show the new one
+                            dialog.dismiss()
+                        }
+                        .addOnFailureListener { e ->
+                            Toast.makeText(this, "Error adding field: ${e.message}", Toast.LENGTH_LONG).show()
+                            Log.e("showFieldDialog", "Error adding field", e)
+                        }
+                } else {
+                    // This is for EDITING an existing field
+                    // 1. Re-create the Field object with potentially updated data, but using the ORIGINAL ID
+                    val updatedField = Field(fieldToEdit.id, name, area, distance, plant)
+
+                    // 2. Reference the existing document by its ID and update it
+                    userFieldsCollection.document(fieldToEdit.id)
+                        .set(updatedField) // Use .set() to completely replace or .update() for partial
+                        .addOnSuccessListener {
+                            Toast.makeText(this, "Field updated successfully!", Toast.LENGTH_SHORT).show()
+                            loadFieldsFromFirestore() // Reload all fields to reflect changes
+                            dialog.dismiss()
+                        }
+                        .addOnFailureListener { e ->
+                            Toast.makeText(this, "Error updating field: ${e.message}", Toast.LENGTH_LONG).show()
+                            Log.e("showFieldDialog", "Error updating field", e)
+                        }
+                }
             } else {
                 Toast.makeText(this, "User not logged in", Toast.LENGTH_SHORT).show()
             }
         }
-
-
         dialog.show()
     }
-
-
 }
-

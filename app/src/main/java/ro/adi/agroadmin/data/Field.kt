@@ -9,6 +9,7 @@ import kotlinx.parcelize.Parcelize
 @Parcelize
 @IgnoreExtraProperties
 data class Field(
+    var id: String = "",
     val name: String = "",
     val area: Int = 0,
     val distance: Int = 0,

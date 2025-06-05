@@ -59,17 +59,6 @@ class HomeActivity : AppCompatActivity() {
         }
 
 
-
-        val user = FirebaseAuth.getInstance().currentUser
-        val emailTextView = findViewById<TextView>(R.id.emailText)
-
-        if (user != null) {
-            // Show email or displayName if available
-            emailTextView.text = user.displayName ?: user.email ?: "Unknown user"
-        } else {
-            emailTextView.text = "Not logged in"
-        }
-
         fieldsChart = findViewById(R.id.fieldsChart)
         operationsChart = findViewById(R.id.operationsChart)
 

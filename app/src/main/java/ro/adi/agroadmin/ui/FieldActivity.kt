@@ -29,20 +29,10 @@ class FieldActivity : AppCompatActivity() {
         setTheme(R.style.Theme_AgroAdmin)
         setContentView(R.layout.activity_field)
 
-        val user = FirebaseAuth.getInstance().currentUser
-        val emailTextView = findViewById<TextView>(R.id.userEmail)
-
         val createButton = findViewById<Button>(R.id.btnCreateOperation)
 
         createButton.setOnClickListener {
             showOperationDialog()
-        }
-
-        if (user != null) {
-            // Show email or displayName if available
-            emailTextView.text = user.displayName ?: user.email ?: "Unknown user"
-        } else {
-            emailTextView.text = "Not logged in"
         }
 
         val field = intent.getParcelableExtra<Field>("field")

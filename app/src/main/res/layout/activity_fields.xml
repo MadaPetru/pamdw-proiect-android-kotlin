@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/activity_fields"
     android:layout_width="match_parent"
@@ -8,74 +7,39 @@
     android:background="#87CEEB">
 
     <!-- Top Bar -->
-    <LinearLayout
-        android:id="@+id/topBar"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:padding="10dp"
-        android:background="#66CDAA"
-        android:gravity="center_vertical">
-
-        <ImageView
-            android:layout_width="24dp"
-            android:layout_height="24dp"
-            android:src="@drawable/farmer_icon" />
-
-        <TextView
-            android:id="@+id/userEmail"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="mada.petru@digitalexplorer.ro"
-            android:textColor="@android:color/black"
-            android:textSize="14sp" />
-
-        <Button
-            android:id="@+id/weatherButton" android:layout_width="24dp"
-            android:layout_height="24dp"
-            android:text="☀️"
-            android:gravity="center"
-            android:textSize="18sp"
-            android:background="?attr/selectableItemBackgroundBorderless" />
-
-        <Button
-            android:id="@+id/lockButton" android:layout_width="24dp"
-            android:layout_height="24dp"
-            android:text="🔓"
-            android:gravity="center"
-            android:textSize="18sp"
-            android:background="?attr/selectableItemBackgroundBorderless" />
-    </LinearLayout>
+    <ro.adi.agroadmin.ui.common.AppHeaderView
+            android:id="@+id/appHeader"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
 
     <!-- Create Field and Search -->
     <LinearLayout
         android:id="@+id/topControls"
-        android:layout_below="@id/topBar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_below="@id/appHeader"
+        android:gravity="center_vertical"
         android:orientation="horizontal"
-        android:padding="10dp"
-        android:gravity="center_vertical">
+        android:padding="10dp">
 
         <Button
             android:id="@+id/btnCreateField"
             android:layout_width="wrap_content"
             android:layout_height="32dp"
-            android:minHeight="0dp"
+            android:background="#66CDAA"
             android:minWidth="0dp"
+            android:minHeight="0dp"
             android:paddingLeft="8dp"
             android:paddingRight="8dp"
-            android:textSize="12sp"
-            android:background="#66CDAA"
-            android:text="Create Field" />
+            android:text="Create Field"
+            android:textSize="12sp" />
 
         <EditText
             android:id="@+id/searchField"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
             android:layout_marginStart="8dp"
+            android:layout_weight="1"
             android:background="#66CDAA"
             android:hint="Search field ..." />
     </LinearLayout>
@@ -84,22 +48,22 @@
         android:id="@+id/swipeRefresh"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_below="@id/topControls"
         android:layout_above="@id/bottomNav"
-    >
+        android:layout_below="@id/topControls">
         <!-- Field Cards -->
         <ScrollView
             android:id="@+id/scrollView"
-            android:layout_below="@id/topControls"
-            android:layout_above="@id/bottomNavigation"
             android:layout_width="match_parent"
-            android:layout_height="match_parent">
+            android:layout_height="match_parent"
+            android:layout_above="@id/bottomNavigation"
+            android:layout_below="@id/topControls">
 
             <LinearLayout
                 android:id="@+id/fieldList"
-                android:layout_width="match_parent"
+                android:layout_width="250dp"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
+                android:layout_gravity="center_horizontal"
                 android:padding="10dp" />
         </ScrollView>
     </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
@@ -107,18 +71,18 @@
     <!-- Bottom Navigation -->
     <LinearLayout
         android:id="@+id/bottomNav"
-        android:layout_alignParentBottom="true"
         android:layout_width="wrap_content"
         android:layout_height="150dp"
-        android:orientation="vertical"
+        android:layout_alignParentBottom="true"
+        android:background="@drawable/land"
         android:gravity="center"
-        android:background="@drawable/land">
+        android:orientation="vertical">
 
         <ImageView
             android:layout_width="32dp"
             android:layout_height="32dp"
-            android:src="@drawable/farm_tractor"
-            android:layout_marginEnd="80dp" />
+            android:layout_marginEnd="80dp"
+            android:src="@drawable/farm_tractor" />
 
         <ImageView
             android:layout_width="32dp"

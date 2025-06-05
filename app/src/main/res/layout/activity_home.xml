@@ -7,45 +7,10 @@
     android:background="#87CEEB">
 
     <!-- Top Header -->
-    <LinearLayout
+    <ro.adi.agroadmin.ui.common.AppHeaderView
+        android:id="@+id/appHeader"
         android:layout_width="match_parent"
-        android:layout_height="60dp"
-        android:background="#66CDAA"
-        android:padding="8dp"
-        android:orientation="horizontal"
-        android:gravity="center_vertical">
-
-        <ImageView
-            android:layout_width="24dp"
-            android:layout_height="24dp"
-            android:src="@drawable/farmer_icon" />
-
-        <TextView
-            android:id="@+id/emailText"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:paddingStart="8dp"
-            android:text="user@example.com"
-            android:textColor="#000"
-            android:textSize="14sp" />
-
-        <Button
-            android:id="@+id/weatherButton" android:layout_width="24dp"
-            android:layout_height="24dp"
-            android:text="☀️"
-            android:gravity="center"
-            android:textSize="18sp"
-            android:background="?attr/selectableItemBackgroundBorderless" />
-
-        <Button
-            android:id="@+id/lockButton" android:layout_width="24dp"
-            android:layout_height="24dp"
-            android:text="🔓"
-            android:gravity="center"
-            android:textSize="18sp"
-            android:background="?attr/selectableItemBackgroundBorderless" />
-    </LinearLayout>
+        android:layout_height="wrap_content" />
 
     <!-- Chart Section 1 -->
     <LinearLayout
