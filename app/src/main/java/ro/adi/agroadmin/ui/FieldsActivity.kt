@@ -2,6 +2,8 @@ package ro.adi.agroadmin.ui
 
 import android.content.Intent
 import android.os.Bundle
+import android.text.Editable // Import Editable
+import android.text.TextWatcher // Import TextWatcher
 import android.util.Log
 import android.view.LayoutInflater
 import android.widget.Button
@@ -14,19 +16,19 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.firestore.FieldPath
 import com.google.firebase.firestore.FirebaseFirestore
 import ro.adi.agroadmin.R
 import ro.adi.agroadmin.data.Field
-import ro.adi.agroadmin.ui.common.AppHeaderView
+import ro.adi.agroadmin.ui.common.AppHeaderView // Keep this if AppHeaderView is still used in XML
 
 class FieldsActivity : AppCompatActivity() {
 
     private lateinit var fieldList: LinearLayout
-    private lateinit var searchField: EditText
+    private lateinit var searchField: EditText // Declare searchField here
 
     override fun onResume() {
         super.onResume()
+        // Load fields when activity resumes, initially with no search query
         loadFieldsFromFirestore()
     }
 
@@ -35,14 +37,15 @@ class FieldsActivity : AppCompatActivity() {
         setContentView(R.layout.activity_fields)
 
         val swipeRefresh = findViewById<SwipeRefreshLayout>(R.id.swipeRefresh)
+        searchField = findViewById(R.id.searchField) // Initialize searchField
 
         swipeRefresh.setOnRefreshListener {
-            loadFieldsFromFirestore()
+            // When refreshing, re-run the search with current query
+            loadFieldsFromFirestore(searchField.text.toString())
             swipeRefresh.isRefreshing = false
         }
 
         val createButton = findViewById<Button>(R.id.btnCreateField)
-
         createButton.setOnClickListener {
             Log.e("FieldsActivity", "Create button clicked")
             showFieldDialog()
@@ -50,7 +53,11 @@ class FieldsActivity : AppCompatActivity() {
 
         fieldList = findViewById(R.id.fieldList)
 
-        loadFieldsFromFirestore()
+        // Add TextWatcher to searchField
+        setupSearchField() // Call the setup function
+
+        // Initial load of fields is already in onResume(), no need to call again here
+        // loadFieldsFromFirestore()
 
         val bottomNav = findViewById<BottomNavigationView>(R.id.bottomNavigation)
         bottomNav.selectedItemId = R.id.nav_fields
@@ -64,6 +71,24 @@ class FieldsActivity : AppCompatActivity() {
                 else -> false
             }
         }
+    }
+
+    // --- Search Setup Function ---
+    private fun setupSearchField() {
+        searchField.addTextChangedListener(object : TextWatcher {
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {
+                // Not needed for this functionality
+            }
+
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
+                // Trigger search every time text changes
+                loadFieldsFromFirestore(s.toString())
+            }
+
+            override fun afterTextChanged(s: Editable?) {
+                // Not needed for this functionality
+            }
+        })
     }
 
     private fun addFieldCard(field: Field) {
@@ -116,7 +141,7 @@ class FieldsActivity : AppCompatActivity() {
             .addOnSuccessListener {
                 Toast.makeText(this, "Field '${field.name}' deleted successfully!", Toast.LENGTH_SHORT).show()
                 // After deletion, refresh the list to reflect the change
-                loadFieldsFromFirestore()
+                loadFieldsFromFirestore(searchField.text.toString()) // Pass current search query
             }
             .addOnFailureListener { e ->
                 Toast.makeText(this, "Error deleting field: ${e.message}", Toast.LENGTH_LONG).show()
@@ -124,28 +149,51 @@ class FieldsActivity : AppCompatActivity() {
             }
     }
 
-    private fun loadFieldsFromFirestore() {
+    // --- Modified loadFieldsFromFirestore to support searching ---
+    private fun loadFieldsFromFirestore(searchQuery: String = "") { // Added optional searchQuery parameter
         val userEmail = FirebaseAuth.getInstance().currentUser?.email
 
         if (userEmail != null) {
             val db = FirebaseFirestore.getInstance()
-            db.collection("users")
+            val fieldsCollectionRef = db.collection("users")
                 .document(userEmail)
                 .collection("fields")
-                .get()
+
+            // Query construction based on search
+            val query = if (searchQuery.isNotBlank()) {
+                // Case-insensitive search requires converting to lowercase (Firestore doesn't have native case-insensitivity)
+                // For a true "contains" search, you'd need more advanced techniques like Algolia or client-side filtering.
+                // This performs a "starts with" or exact match search on 'name' or 'plant'.
+                // Firestore doesn't directly support 'contains' queries efficiently without an external search service.
+                // For a simple 'starts with' filter:
+                fieldsCollectionRef.whereGreaterThanOrEqualTo("name", searchQuery)
+                    .whereLessThanOrEqualTo("name", searchQuery + '\uf8ff')
+                // You can add more conditions if you want to search across multiple fields,
+                // but beware of Firestore query limitations (e.g., cannot use range filters on multiple fields in a single query)
+            } else {
+                fieldsCollectionRef // No search query, get all fields
+            }
+
+            query.get()
                 .addOnSuccessListener { result ->
                     fieldList.removeAllViews() // Clear old views if reloading
 
-                    Log.e("FieldsActivity", "Loading fields for user: $userEmail")
+                    Log.e("FieldsActivity", "Loading fields for user: $userEmail with query: '$searchQuery'")
                     for (document in result) {
                         val field = document.toObject(Field::class.java)
-                        Log.e("load fields"," Field loaded: ${field.name} with ID: ${field.id}")
-                        addFieldCard(field)
+                        // Client-side filtering for 'contains' if the Firestore query isn't enough
+                        if (searchQuery.isBlank() ||
+                            field.name.contains(searchQuery, ignoreCase = true)
+                        ) {
+                            Log.e("load fields"," Field loaded: ${field.name} with ID: ${field.id}")
+                            addFieldCard(field)
+                        }
                     }
                     Log.e("FieldsActivity", "Fields loaded successfully")
                 }
                 .addOnFailureListener { e ->
                     Toast.makeText(this, "Failed to load fields: ${e.message}", Toast.LENGTH_LONG).show()
+                    Log.e("FieldsActivity", "Failed to load fields", e)
                 }
         } else {
             Toast.makeText(this, "User not logged in", Toast.LENGTH_SHORT).show()
@@ -178,10 +226,8 @@ class FieldsActivity : AppCompatActivity() {
         dialog.show()
     }
 
-
-
     private fun showFieldDialog(fieldToEdit: Field? = null) {
-        Log.e("showFieldDialog", "Called with fieldToEdit: ${fieldToEdit?.id ?: "null"}") // Improved log
+        Log.e("showFieldDialog", "Called with fieldToEdit: ${fieldToEdit?.id ?: "null"}")
         val dialogView = LayoutInflater.from(this).inflate(R.layout.modal_field, null)
         val dialog = AlertDialog.Builder(this)
             .setView(dialogView)
@@ -195,7 +241,6 @@ class FieldsActivity : AppCompatActivity() {
         val saveBtn = dialogView.findViewById<Button>(R.id.saveBtn)
         val cancelBtn = dialogView.findViewById<Button>(R.id.cancelBtn)
 
-        // If editing, fill data
         if (fieldToEdit != null) {
             title.text = "Edit Field"
             nameEdit.setText(fieldToEdit.name)
@@ -203,7 +248,7 @@ class FieldsActivity : AppCompatActivity() {
             distanceEdit.setText(fieldToEdit.distance.toString())
             plantEdit.setText(fieldToEdit.plant)
         } else {
-            title.text = "Add New Field" // Changed from "Field" for clarity
+            title.text = "Add New Field"
         }
 
         cancelBtn.setOnClickListener {
@@ -231,18 +276,15 @@ class FieldsActivity : AppCompatActivity() {
 
                 if (fieldToEdit == null) {
                     // This is for ADDING a new field
-                    // 1. Get a reference to a new document, which generates the ID locally
                     val newDocRef = userFieldsCollection.document()
-                    val newFieldId = newDocRef.id // This is the auto-generated ID
+                    val newFieldId = newDocRef.id
 
-                    // 2. Create the Field object with the generated ID
                     val newField = Field(newFieldId, name, area, distance, plant)
 
-                    // 3. Set the data to the document using the newDocRef
                     newDocRef.set(newField)
                         .addOnSuccessListener {
                             Toast.makeText(this, "Field added successfully!", Toast.LENGTH_SHORT).show()
-                            loadFieldsFromFirestore() // Reload all fields to show the new one
+                            loadFieldsFromFirestore(searchField.text.toString()) // Pass current search query
                             dialog.dismiss()
                         }
                         .addOnFailureListener { e ->
@@ -251,15 +293,13 @@ class FieldsActivity : AppCompatActivity() {
                         }
                 } else {
                     // This is for EDITING an existing field
-                    // 1. Re-create the Field object with potentially updated data, but using the ORIGINAL ID
                     val updatedField = Field(fieldToEdit.id, name, area, distance, plant)
 
-                    // 2. Reference the existing document by its ID and update it
                     userFieldsCollection.document(fieldToEdit.id)
-                        .set(updatedField) // Use .set() to completely replace or .update() for partial
+                        .set(updatedField)
                         .addOnSuccessListener {
                             Toast.makeText(this, "Field updated successfully!", Toast.LENGTH_SHORT).show()
-                            loadFieldsFromFirestore() // Reload all fields to reflect changes
+                            loadFieldsFromFirestore(searchField.text.toString()) // Pass current search query
                             dialog.dismiss()
                         }
                         .addOnFailureListener { e ->
