@@ -4,7 +4,7 @@
     android:layout_height="wrap_content"
     android:orientation="horizontal"
     android:padding="10dp"
-    android:background="#66CDAA"
+    android:background="?attr/colorHeaderBackground"
     android:gravity="center_vertical">
 
     <ImageView
@@ -23,8 +23,8 @@
 
     <Button
         android:id="@+id/weatherButton"
-        android:layout_width="24dp"
-        android:layout_height="24dp"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
         android:text="☀️"
         android:gravity="center"
         android:textSize="18sp"
@@ -32,8 +32,8 @@
 
     <Button
         android:id="@+id/lockButton"
-        android:layout_width="24dp"
-        android:layout_height="24dp"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
         android:text="🔓"
         android:gravity="center"
         android:textSize="18sp"

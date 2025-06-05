@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <attr name="colorHeaderBackground" format="color" />
+    <attr name="colorHeaderText" format="color" />
+    <attr name="colorButtonBackground" format="color" />
+    <attr name="colorButtonTint" format="color" />
+</resources>

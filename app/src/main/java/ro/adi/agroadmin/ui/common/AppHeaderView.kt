@@ -36,6 +36,8 @@ class AppHeaderView @JvmOverloads constructor(
         lockButton = findViewById(R.id.lockButton)
         weatherButton = findViewById(R.id.weatherButton)
 
+        // Set the initial icon based on the current theme when the view is initialized
+        updateThemeButtonIcon()
         setupThemeToggleButton()
         setupLogoutButton()
 
@@ -107,23 +109,32 @@ class AppHeaderView @JvmOverloads constructor(
     private fun setupThemeToggleButton() {
         weatherButton.setOnClickListener {
             val currentNightMode = resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK
-            when (currentNightMode) {
-                Configuration.UI_MODE_NIGHT_YES -> {
-                    AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
-                    Toast.makeText(context, "Switched to Light Theme", Toast.LENGTH_SHORT).show()
-                }
-                Configuration.UI_MODE_NIGHT_NO -> {
-                    AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES)
-                    Toast.makeText(context, "Switched to Dark Theme", Toast.LENGTH_SHORT).show()
-                }
-                else -> {
-                    AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES)
-                    Toast.makeText(context, "Switched to Dark Theme", Toast.LENGTH_SHORT).show()
-                }
+            if (currentNightMode == Configuration.UI_MODE_NIGHT_YES) {
+                // Currently in Dark Mode, switch to Light Mode
+                AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
+                Toast.makeText(context, "Switched to Light Theme", Toast.LENGTH_SHORT).show()
+            } else {
+                // Currently in Light Mode or unspecified, switch to Dark Mode
+                AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES)
+                Toast.makeText(context, "Switched to Dark Theme", Toast.LENGTH_SHORT).show()
             }
+
+            // Update the icon immediately after the theme change
+            updateThemeButtonIcon()
+
+            // Recreate the activity to apply the theme change to the entire app
             if (context is Activity) {
                 (context as Activity).recreate()
             }
+        }
+    }
+
+    private fun updateThemeButtonIcon() {
+        val currentNightMode = resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK
+        if (currentNightMode == Configuration.UI_MODE_NIGHT_YES) {
+            weatherButton.text = "🌙" // Dark theme icon (Moon)
+        } else {
+            weatherButton.text = "☀️" // Light theme icon (Sun)
         }
     }
 }

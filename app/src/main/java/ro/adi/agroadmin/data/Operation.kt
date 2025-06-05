@@ -7,8 +7,8 @@ import kotlinx.parcelize.Parcelize
 data class Operation(
     val type: String,
     val cost: Int,
-    val plant: Int,
+    val plant: String,
     val date: String,
-    val revenue: String,
+    val revenue: Int,
     val currency: String
 ):Parcelable

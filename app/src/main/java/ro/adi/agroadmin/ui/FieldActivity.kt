@@ -48,7 +48,7 @@ class FieldActivity : AppCompatActivity() {
         recyclerView.layoutManager = LinearLayoutManager(this)
 
         val operations = listOf(
-            Operation("A", 222, 2, "222", "333", "RON")
+            Operation("A", 222, "2", "222", 333, "RON")
         )
 
         adapter = OperationAdapter(operations)
@@ -105,10 +105,10 @@ class FieldActivity : AppCompatActivity() {
         save.setOnClickListener {
             val newOperation = Operation(
                 type = type.text.toString(),
-                cost = cost.text.toString().toDoubleOrNull() ?: 0.0,
+                cost = cost.text.toString().toInt(),
                 plant = plant.text.toString(),
                 date = date.text.toString(),
-                revenue = revenue.text.toString().toDoubleOrNull() ?: 0.0,
+                revenue = revenue.text.toString().toInt(),
                 currency = currencySpinner.selectedItem.toString()
             )
             // TODO: handle save
@@ -118,14 +118,4 @@ class FieldActivity : AppCompatActivity() {
 
         dialog.show()
     }
-
-    data class Operation(
-        val type: String,
-        val cost: Double,
-        val plant: String,
-        val date: String,
-        val revenue: Double,
-        val currency: String
-    )
-
 }

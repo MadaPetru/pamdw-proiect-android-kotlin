@@ -8,7 +8,7 @@ import androidx.recyclerview.widget.RecyclerView
 import ro.adi.agroadmin.R
 import ro.adi.agroadmin.data.Operation
 
-class OperationAdapter(private val operations: List<Operation>) :
+class OperationAdapter(private var operations: List<Operation>) :
     RecyclerView.Adapter<OperationAdapter.OperationViewHolder>() {
 
     class OperationViewHolder(val view: View) : RecyclerView.ViewHolder(view) {
@@ -20,8 +20,8 @@ class OperationAdapter(private val operations: List<Operation>) :
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): OperationViewHolder {
-        val inflater = LayoutInflater.from(parent.context)
-        val view = inflater.inflate(R.layout.item_operation, parent, false)
+        val view = LayoutInflater.from(parent.context)
+            .inflate(R.layout.item_operation, parent, false) // Assuming you have item_operation.xml
         return OperationViewHolder(view)
     }
 
@@ -30,7 +30,7 @@ class OperationAdapter(private val operations: List<Operation>) :
         holder.type.text = op.type
         holder.cost.text = op.cost.toString()
         holder.date.text = op.date
-        holder.rev.text = op.revenue
+        holder.rev.text = op.revenue.toString()
         holder.cur.text = op.currency
     }
 
