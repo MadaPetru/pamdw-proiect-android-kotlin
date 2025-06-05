@@ -1,8 +1,8 @@
 package ro.adi.agroadmin.ui
 
-import android.content.Context
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.widget.Button
 import android.widget.EditText
@@ -11,8 +11,10 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FirebaseFirestore
 import ro.adi.agroadmin.R
 import ro.adi.agroadmin.data.Field
 
@@ -20,13 +22,42 @@ class FieldsActivity : AppCompatActivity() {
 
     private lateinit var fieldList: LinearLayout
 
+    override fun onResume() {
+        super.onResume()
+        loadFieldsFromFirestore()
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_fields)
 
+        val swipeRefresh = findViewById<SwipeRefreshLayout>(R.id.swipeRefresh)
+
+        swipeRefresh.setOnRefreshListener {
+            loadFieldsFromFirestore()
+            swipeRefresh.isRefreshing = false
+        }
+
+        val auth = FirebaseAuth.getInstance() // Initialize FirebaseAuth
+        val logoutButton = findViewById<Button>(R.id.lockButton) // Correct ID for the lock button
+        logoutButton.setOnClickListener {
+            showConfirmationDialog("Are you sure you want to log out?") {
+                auth.signOut() // Sign out from Firebase
+                Toast.makeText(this, "Logged out successfully!", Toast.LENGTH_SHORT).show()
+
+                // Redirect to your LoginActivity or Splash screen
+                val intent = Intent(this, LoginActivity::class.java) // Replace LoginActivity with your actual login screen
+                intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK // Clear back stack
+                startActivity(intent)
+                finish() // Finish the current activity
+            }
+        }
+
+
         val createButton = findViewById<Button>(R.id.btnCreateField)
 
         createButton.setOnClickListener {
+            Log.e("FieldsActivity", "Create button clicked")
             showFieldDialog()
         }
 
@@ -42,15 +73,7 @@ class FieldsActivity : AppCompatActivity() {
 
         fieldList = findViewById(R.id.fieldList)
 
-        val fields = listOf(
-            Field("B", 9, 9, "Vv"),
-            Field("Test", 1, 2, "Porumb"),
-            Field("2", 2, 2, "2")
-        )
-
-        fields.forEach { field ->
-            addFieldCard(field)
-        }
+        loadFieldsFromFirestore()
 
         val bottomNav = findViewById<BottomNavigationView>(R.id.bottomNavigation)
         bottomNav.selectedItemId = R.id.nav_fields
@@ -73,6 +96,18 @@ class FieldsActivity : AppCompatActivity() {
         card.findViewById<TextView>(R.id.tvDistance).text = "Distance from farm: ${field.distance}"
         card.findViewById<TextView>(R.id.tvPlant).text = "Current plant: ${field.plant}"
 
+        val editFieldButton = card.findViewById<Button>(R.id.editFieldButton)
+        editFieldButton.setOnClickListener {
+            showFieldDialog(field)
+        }
+
+        val deleteFieldButton = card.findViewById<Button>(R.id.deleteFieldButton)
+        deleteFieldButton.setOnClickListener {
+            showConfirmationDialog("Are you sure you want to delete this field?") {
+//                deleteFieldFromFirestore(field)
+            }
+        }
+
         val seeFieldButton = card.findViewById<Button>(R.id.seeFieldButton)
         seeFieldButton.setOnClickListener {
             val intent = Intent(this, FieldActivity::class.java)
@@ -83,7 +118,63 @@ class FieldsActivity : AppCompatActivity() {
         fieldList.addView(card)
     }
 
+    private fun loadFieldsFromFirestore() {
+        val userEmail = FirebaseAuth.getInstance().currentUser?.email
+
+        if (userEmail != null) {
+            val db = FirebaseFirestore.getInstance()
+            db.collection("users")
+                .document(userEmail)
+                .collection("fields")
+                .get()
+                .addOnSuccessListener { result ->
+                    fieldList.removeAllViews() // Clear old views if reloading
+
+                    Log.e("FieldsActivity", "Loading fields for user: $userEmail")
+                    for (document in result) {
+                        val field = document.toObject(Field::class.java)
+                        addFieldCard(field)
+                    }
+                    Log.e("FieldsActivity", "Fields loaded successfully")
+                }
+                .addOnFailureListener { e ->
+                    Toast.makeText(this, "Failed to load fields: ${e.message}", Toast.LENGTH_LONG).show()
+                }
+        } else {
+            Toast.makeText(this, "User not logged in", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    private fun showConfirmationDialog(
+        message: String,
+        onConfirm: () -> Unit
+    ) {
+        val dialogView = LayoutInflater.from(this).inflate(R.layout.modal_confim, null)
+        val dialog = AlertDialog.Builder(this)
+            .setView(dialogView)
+            .setCancelable(true)
+            .create()
+
+        val msg = dialogView.findViewById<TextView>(R.id.confirmMessage)
+        val cancelBtn = dialogView.findViewById<Button>(R.id.btnCancel)
+        val confirmBtn = dialogView.findViewById<Button>(R.id.btnConfirm)
+
+        msg.text = message
+
+        cancelBtn.setOnClickListener { dialog.dismiss() }
+
+        confirmBtn.setOnClickListener {
+            dialog.dismiss()
+            onConfirm()
+        }
+
+        dialog.show()
+    }
+
+
+
     private fun showFieldDialog(fieldToEdit: Field? = null) {
+        Log.e("ss","ss");
         val dialogView = LayoutInflater.from(this).inflate(R.layout.modal_field, null)
         val dialog = AlertDialog.Builder(this)
             .setView(dialogView)
@@ -113,18 +204,39 @@ class FieldsActivity : AppCompatActivity() {
         }
 
         saveBtn.setOnClickListener {
-            val field = Field(
-                name = nameEdit.text.toString(),
-                area = areaEdit.text.toString().toInt(),
-                distance = distanceEdit.text.toString().toInt(),
-                plant = plantEdit.text.toString()
-            )
+            val name = nameEdit.text.toString().trim()
+            val area = areaEdit.text.toString().toIntOrNull()
+            val distance = distanceEdit.text.toString().toIntOrNull()
+            val plant = plantEdit.text.toString().trim()
 
-            // TODO: Add field to list or update database
-            Toast.makeText(this, "Saved: ${field.name}", Toast.LENGTH_SHORT).show()
+            if (name.isEmpty() || area == null || distance == null || plant.isEmpty()) {
+                Toast.makeText(this, "Please fill all fields correctly", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
 
-            dialog.dismiss()
+            val field = Field(name, area, distance, plant)
+
+            val db = FirebaseFirestore.getInstance()
+            val userEmail = FirebaseAuth.getInstance().currentUser?.email
+
+            if (userEmail != null) {
+                db.collection("users")
+                    .document(userEmail)
+                    .collection("fields")
+                    .add(field)
+                    .addOnSuccessListener {
+                        Toast.makeText(this, "Field saved", Toast.LENGTH_SHORT).show()
+                        addFieldCard(field) // Add to UI list
+                        dialog.dismiss()
+                    }
+                    .addOnFailureListener { e ->
+                        Toast.makeText(this, "Error saving field: ${e.message}", Toast.LENGTH_LONG).show()
+                    }
+            } else {
+                Toast.makeText(this, "User not logged in", Toast.LENGTH_SHORT).show()
+            }
         }
+
 
         dialog.show()
     }

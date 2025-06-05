@@ -166,20 +166,26 @@ class HomeActivity : AppCompatActivity() {
         val baseCurrency = "RON"
         lifecycleScope.launch {
             try {
-//                val rates = withContext(Dispatchers.IO) {
-//                    CurrencyApi.getRates(this@HomeActivity, baseCurrency, currencyTo)
-//                }
-//                val rate = rates[currencyTo] ?: 1.0f
-//                fetchOperations { operations ->
-//                    val (labels, costData, revenueData) = prepareChartData(operations, groupByField = false, rate = rate.toFloat())
-//                    setupChart(operationsChart, labels, costData, revenueData)
-//                }
+                val rates = withContext(Dispatchers.IO) {
+                    CurrencyApi.getRates(this@HomeActivity, baseCurrency, currencyTo)
+                }
+                val rate = rates[currencyTo] ?: 1.0f
+                Log.d("ChartUpdate", "Currency rate: $rate")
+
+                fetchOperations { operations ->
+                    val (labels, costData, revenueData) = prepareChartData(
+                        operations,
+                        groupByField = false,
+                        rate = rate.toFloat()
+                    )
+                    setupChart(operationsChart, labels, costData, revenueData)
+                }
             } catch (e: Exception) {
                 Log.e("ChartUpdate", "Failed to update operations chart", e)
-                // Show fallback or user message here
             }
         }
     }
+
 
     private fun setupChart(chart: LineChart, labels: List<String>, costValues: List<Float>, revenueValues: List<Float>) {
         val costEntries = costValues.mapIndexed { i, value -> Entry(i.toFloat(), value) }

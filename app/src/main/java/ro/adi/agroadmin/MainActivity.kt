@@ -27,7 +27,6 @@ class MainActivity : ComponentActivity() {
     }
 
     private fun checkIfAuthenticated(): Boolean {
-        return false
         val user = FirebaseAuth.getInstance().currentUser
         return user != null
     }

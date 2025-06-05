@@ -60,7 +60,7 @@ object CurrencyApi {
                 defaultRates
             }
         } catch (e: Exception) {
-            Log.e("CurrencyApi", "Fetch failed: ${e.message}")
+            Log.e("CurrencyApi", "Fetch failed", e)
             defaultRates
         }
     }

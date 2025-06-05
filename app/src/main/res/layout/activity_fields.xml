@@ -31,19 +31,21 @@
             android:textColor="@android:color/black"
             android:textSize="14sp" />
 
-        <TextView
-            android:layout_width="24dp"
+        <Button
+            android:id="@+id/weatherButton" android:layout_width="24dp"
             android:layout_height="24dp"
             android:text="☀️"
             android:gravity="center"
-            android:textSize="18sp" />
+            android:textSize="18sp"
+            android:background="?attr/selectableItemBackgroundBorderless" />
 
-        <TextView
-            android:layout_width="24dp"
+        <Button
+            android:id="@+id/lockButton" android:layout_width="24dp"
             android:layout_height="24dp"
             android:text="🔓"
             android:gravity="center"
-            android:textSize="18sp" />
+            android:textSize="18sp"
+            android:background="?attr/selectableItemBackgroundBorderless" />
     </LinearLayout>
 
     <!-- Create Field and Search -->
@@ -78,21 +80,29 @@
             android:hint="Search field ..." />
     </LinearLayout>
 
-    <!-- Field Cards -->
-    <ScrollView
-        android:id="@+id/scrollView"
-        android:layout_below="@id/topControls"
-        android:layout_above="@id/bottomNavigation"
+    <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+        android:id="@+id/swipeRefresh"
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
-
-        <LinearLayout
-            android:id="@+id/fieldList"
+        android:layout_height="match_parent"
+        android:layout_below="@id/topControls"
+        android:layout_above="@id/bottomNav"
+    >
+        <!-- Field Cards -->
+        <ScrollView
+            android:id="@+id/scrollView"
+            android:layout_below="@id/topControls"
+            android:layout_above="@id/bottomNavigation"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:padding="10dp" />
-    </ScrollView>
+            android:layout_height="match_parent">
+
+            <LinearLayout
+                android:id="@+id/fieldList"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="10dp" />
+        </ScrollView>
+    </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
 
     <!-- Bottom Navigation -->
     <LinearLayout
@@ -120,7 +130,8 @@
             android:id="@+id/bottomNavigation"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:background="#66CDAA"
+            android:background="@android:color/transparent"
+            app:elevation="0dp"
             app:menu="@menu/bottom_nav_menu" />
     </LinearLayout>
 </RelativeLayout>
