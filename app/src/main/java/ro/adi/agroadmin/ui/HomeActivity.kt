@@ -147,23 +147,40 @@ class HomeActivity : AppCompatActivity() {
     }
 
     private fun updateOperationsChart(currencyTo: String) {
-        val baseCurrency = "RON"
         lifecycleScope.launch {
             try {
-                val rates = withContext(Dispatchers.IO) {
-                    CurrencyApi.getRates(this@HomeActivity, baseCurrency, currencyTo)
-                }
-                val rate = (rates[currencyTo] ?: 1.0f).toFloat()
-                Log.d("ChartUpdate", "Currency rate: $rate")
-
                 val operations = fetchOperationsSafe()
                 Log.d("ChartUpdate", "Fetched ${operations.size} operations")
 
                 if (operations.isNotEmpty()) {
-                    val (labels, costData, revenueData) = prepareChartData(
+                    // Extract all currencies from operations
+                    val currencies = operations.map { it.currency }.toSet()
+
+                    Log.d("Currencies", "Currencies found: $currencies")
+                    Log.d("CurrencyTo", "Converting to: $currencyTo")
+
+                    // Fetch rates for each currency -> currencyTo
+                    val rates = mutableMapOf<String, Float>()
+
+                    // Fetch all rates concurrently or sequentially:
+                    for (currency in currencies) {
+                        if (currency == currencyTo) {
+                            rates[currency] = 1.0f
+                        } else {
+                            val apiRates = withContext(Dispatchers.IO) {
+                                CurrencyApi.getRates(this@HomeActivity, currency, currencyTo)
+                            }
+                            rates[currency] = (apiRates[currencyTo] ?: 1.0).toFloat()
+                        }
+                    }
+
+                    Log.d("ChartUpdate", "Rates map: $rates")
+
+                    // Now prepare chart data with rates map
+                    val (labels, costData, revenueData) = prepareChartDataMultiRate(
                         operations,
                         groupByField = false,
-                        rate = rate
+                        ratesMap = rates
                     )
                     setupChart(operationsChart, labels, costData, revenueData)
                 }
@@ -173,6 +190,31 @@ class HomeActivity : AppCompatActivity() {
         }
     }
 
+    private fun prepareChartDataMultiRate(
+        operations: List<OperationChartDto>,
+        groupByField: Boolean,
+        ratesMap: Map<String, Float>
+    ): Triple<List<String>, List<Float>, List<Float>> {
+        val groupMap = mutableMapOf<String, Pair<Float, Float>>() // Label -> (cost, revenue)
+
+        for (op in operations) {
+            val key = if (groupByField) op.fieldName else op.type
+            val current = groupMap.getOrDefault(key, 0f to 0f)
+
+            // Get rate for the operation's currency (default 1f if missing)
+            val rate = ratesMap[op.currency] ?: 1.0f
+
+            val newCost = current.first + (op.cost * rate)
+            val newRevenue = current.second + (op.revenue * rate)
+            groupMap[key] = newCost.toFloat() to newRevenue.toFloat()
+        }
+
+        val labels = groupMap.keys.toList()
+        val costData = labels.map { groupMap[it]?.first ?: 0f }
+        val revenueData = labels.map { groupMap[it]?.second ?: 0f }
+
+        return Triple(labels, costData, revenueData)
+    }
 
     private fun setupChart(chart: LineChart, labels: List<String>, costValues: List<Float>, revenueValues: List<Float>) {
         val costEntries = costValues.mapIndexed { i, value -> Entry(i.toFloat(), value) }
