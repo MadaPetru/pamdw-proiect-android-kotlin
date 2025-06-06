@@ -63,9 +63,6 @@ class HomeActivity : AppCompatActivity() {
         fieldsChart = findViewById(R.id.fieldsChart)
         operationsChart = findViewById(R.id.operationsChart)
 
-        setupChart(fieldsChart, listOf("B", "Test"), listOf(200f, 2800f), listOf(200f, 3600f))
-       // setupChart(operationsChart, listOf("A", "semănat", "Arat"), listOf(150f, 3200f, 200f), listOf(100f, 3300f, 180f))
-
         val bottomNav = findViewById<BottomNavigationView>(R.id.bottomNavigation)
         bottomNav.selectedItemId = R.id.nav_home
         bottomNav.setOnItemSelectedListener { item ->
@@ -136,15 +133,41 @@ class HomeActivity : AppCompatActivity() {
 
 
     private fun updateFieldsChart(currencyTo: String) {
-        val baseCurrency = "RON" // or whatever your original values are in
         lifecycleScope.launch {
-            val rates = CurrencyApi.getRates(this@HomeActivity, baseCurrency, currencyTo)
-            val rate = rates[currencyTo] ?: 1.0
-            val updatedCost = listOf(200f, 2800f).map { it * rate.toFloat() }
-            val updatedRevenue = listOf(200f, 3600f).map { it * rate.toFloat() }
-            setupChart(fieldsChart, listOf("B", "Test"), updatedCost, updatedRevenue)
+            try {
+                val operations = fetchOperationsSafe()
+                Log.d("FieldChartUpdate", "Fetched ${operations.size} operations")
+
+                if (operations.isNotEmpty()) {
+                    val currencies = operations.map { it.currency }.toSet()
+                    val rates = mutableMapOf<String, Float>()
+
+                    for (currency in currencies) {
+                        if (currency == currencyTo) {
+                            rates[currency] = 1.0f
+                        } else {
+                            val apiRates = withContext(Dispatchers.IO) {
+                                CurrencyApi.getRates(this@HomeActivity, currency, currencyTo)
+                            }
+                            rates[currency] = (apiRates[currencyTo] ?: 1.0).toFloat()
+                        }
+                    }
+
+                    Log.d("FieldChartUpdate", "Rates map: $rates")
+
+                    val (labels, costData, revenueData) = prepareChartDataMultiRate(
+                        operations,
+                        groupByField = true, // 🔁 Grouping by field here!
+                        ratesMap = rates
+                    )
+                    setupChart(fieldsChart, labels, costData, revenueData)
+                }
+            } catch (e: Exception) {
+                Log.e("FieldChartUpdate", "Failed to update fields chart", e)
+            }
         }
     }
+
 
     private fun updateOperationsChart(currencyTo: String) {
         lifecycleScope.launch {
