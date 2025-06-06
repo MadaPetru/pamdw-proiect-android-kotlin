@@ -51,7 +51,8 @@
         android:text="333"
         android:textSize="14sp" />
 
-    <TextView
+    <Button
+        android:id="@+id/deleteButton"
         android:layout_width="0dp"
         android:layout_height="30dp"
         android:layout_weight="1"
@@ -59,6 +60,7 @@
         android:text="🗑️"
         android:textSize="14sp" />
 
-    <TextView android:layout_width="wrap_content"
+    <Button android:layout_width="wrap_content"
+        android:id="@+id/editButton"
         android:text="✏️" android:textSize="18sp" android:layout_height="30dp"/>
 </LinearLayout>

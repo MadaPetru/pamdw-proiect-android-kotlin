@@ -3,36 +3,51 @@ package ro.adi.agroadmin.ui
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Button
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import ro.adi.agroadmin.R
 import ro.adi.agroadmin.data.Operation
 
-class OperationAdapter(private var operations: List<Operation>) :
-    RecyclerView.Adapter<OperationAdapter.OperationViewHolder>() {
+class OperationAdapter(
+    private val operations: List<Operation>,
+    private val onEdit: (Operation) -> Unit,
+    private val onDelete: (Operation) -> Unit
+) : RecyclerView.Adapter<OperationAdapter.OperationViewHolder>() {
 
-    class OperationViewHolder(val view: View) : RecyclerView.ViewHolder(view) {
-        val type = view.findViewById<TextView>(R.id.tvType)
-        val cost = view.findViewById<TextView>(R.id.tvCost)
-        val date = view.findViewById<TextView>(R.id.tvDate)
-        val rev = view.findViewById<TextView>(R.id.tvRev)
-        val cur = view.findViewById<TextView>(R.id.tvCur)
+    inner class OperationViewHolder(view: View) : RecyclerView.ViewHolder(view) {
+        val tvType: TextView = view.findViewById(R.id.tvType)
+        val tvCost: TextView = view.findViewById(R.id.tvCost)
+        val tvDate: TextView = view.findViewById(R.id.tvDate)
+        val tvRev: TextView = view.findViewById(R.id.tvRev)
+        val tvCur: TextView = view.findViewById(R.id.tvCur)
+        val btnEdit: Button = view.findViewById(R.id.editButton)
+        val btnDelete: Button = view.findViewById(R.id.deleteButton)
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): OperationViewHolder {
         val view = LayoutInflater.from(parent.context)
-            .inflate(R.layout.item_operation, parent, false) // Assuming you have item_operation.xml
+            .inflate(R.layout.item_operation, parent, false) // Your layout file
         return OperationViewHolder(view)
     }
 
     override fun onBindViewHolder(holder: OperationViewHolder, position: Int) {
-        val op = operations[position]
-        holder.type.text = op.type
-        holder.cost.text = op.cost.toString()
-        holder.date.text = op.date
-        holder.rev.text = op.revenue.toString()
-        holder.cur.text = op.currency
+        val operation = operations[position]
+        holder.tvType.text = operation.type
+        holder.tvCost.text = operation.cost.toString()
+        holder.tvDate.text = operation.date
+        holder.tvRev.text = operation.revenue.toString()
+        holder.tvCur.text = operation.currency
+
+        holder.btnEdit.setOnClickListener {
+            onEdit(operation)
+        }
+
+        holder.btnDelete.setOnClickListener {
+            onDelete(operation)
+        }
     }
 
     override fun getItemCount() = operations.size
 }
+
