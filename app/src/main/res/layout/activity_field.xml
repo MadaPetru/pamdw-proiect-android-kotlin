@@ -3,7 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#87CEEB">
+    android:background="?attr/backgroundColor">
 
     <!-- Top Bar -->
     <ro.adi.agroadmin.ui.common.AppHeaderView
@@ -35,7 +35,7 @@
         <Button
             android:id="@+id/btnCreateOperation"
             android:layout_width="wrap_content"
-            android:background="#66CDAA"
+            android:backgroundTint="?attr/colorCreateButton"
             android:layout_height="wrap_content"
             android:text="Create Operation" />
 
@@ -44,7 +44,7 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:background="#66CDAA"
+            android:background="?attr/colorSearchButton"
             android:layout_marginStart="8dp"
             android:hint="Search operation..." />
     </LinearLayout>

@@ -23,10 +23,9 @@
                 android:id="@+id/deleteFieldButton"
                 android:layout_width="wrap_content"
                 android:layout_height="32dp"
+                android:backgroundTint="@android:color/transparent"
                 android:text="🗑️"
-                android:textSize="12sp"
-                android:backgroundTint="#FF4444"
-                android:textColor="#FFFFFF" />
+                android:textSize="12sp" />
 
             <View
                 android:layout_width="0dp"
@@ -37,10 +36,9 @@
                 android:id="@+id/editFieldButton"
                 android:layout_width="wrap_content"
                 android:layout_height="32dp"
+                android:backgroundTint="@android:color/transparent"
                 android:text="✏️"
-                android:textSize="12sp"
-                android:backgroundTint="#FFA500"
-                android:textColor="#FFFFFF" />
+                android:textSize="12sp" />
         </LinearLayout>
 
     </LinearLayout>
@@ -87,6 +85,7 @@
             android:layout_width="wrap_content"
             android:layout_height="32dp"
             android:layout_marginTop="12dp"
+            android:backgroundTint="?attr/cardColorButton"
             android:text="See field"
             android:textSize="12sp" />
     </LinearLayout>

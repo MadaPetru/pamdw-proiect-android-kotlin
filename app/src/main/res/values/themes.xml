@@ -9,6 +9,10 @@
         <item name="colorOnSecondary">@color/black</item>
         <item name="android:statusBarColor">?attr/colorPrimaryVariant</item>
         <item name="colorHeaderBackground">#66CDAA</item>
+        <item name="colorCreateButton">#66CDAA</item>
+        <item name="colorSearchButton">#66CDAA</item>
+        <item name="cardColorButton">#87CEFA</item>
+        <item name="backgroundColor">#87CEFA</item>
         <item name="colorHeaderText">@android:color/black</item>
         <item name="colorButtonBackground">?attr/selectableItemBackgroundBorderless</item>
         <item name="colorButtonTint">@android:color/black</item>

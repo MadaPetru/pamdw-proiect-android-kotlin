@@ -8,7 +8,11 @@
         <item name="colorSecondaryVariant">@color/teal_200</item>
         <item name="colorOnSecondary">@color/black</item>
         <item name="android:statusBarColor">?attr/colorPrimaryVariant</item>
-        <item name="colorHeaderBackground">#333333</item>
+        <item name="colorHeaderBackground">#99CDAA</item>
+        <item name="colorCreateButton">#99CDAA</item>
+        <item name="colorSearchButton">#99CDAA</item>
+        <item name="cardColorButton">#359dde</item>
+        <item name="backgroundColor">#359dde</item>
         <item name="colorHeaderText">@android:color/white</item>
         <item name="colorButtonBackground">?attr/selectableItemBackgroundBorderless</item>
         <item name="colorButtonTint">@android:color/white</item>
