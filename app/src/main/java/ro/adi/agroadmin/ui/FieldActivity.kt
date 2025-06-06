@@ -14,6 +14,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.bottomnavigation.BottomNavigationView
+import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import ro.adi.agroadmin.R
 import ro.adi.agroadmin.data.Field
@@ -84,7 +85,9 @@ class FieldActivity : AppCompatActivity() {
 
         val db = FirebaseFirestore.getInstance()
 
-        db.collection("fields")
+        db.collection("users")
+            .document(FirebaseAuth.getInstance().currentUser?.email ?: "")
+            .collection("fields")
             .document(field.id)
             .collection("operations")
             .get()
@@ -160,7 +163,10 @@ class FieldActivity : AppCompatActivity() {
             )
 
             val db = FirebaseFirestore.getInstance()
-            val opsCollection = db.collection("fields")
+            val opsCollection = db
+                .collection("users")
+                .document(FirebaseAuth.getInstance().currentUser?.email ?: "")
+                .collection("fields")
                 .document(field.id)
                 .collection("operations")
 
@@ -190,6 +196,8 @@ class FieldActivity : AppCompatActivity() {
             .setMessage("Are you sure you want to delete this operation?")
             .setPositiveButton("Delete") { _, _ ->
                 FirebaseFirestore.getInstance()
+                    .collection("users")
+                    .document(FirebaseAuth.getInstance().currentUser?.email ?: "")
                     .collection("fields")
                     .document(field.id)
                     .collection("operations")

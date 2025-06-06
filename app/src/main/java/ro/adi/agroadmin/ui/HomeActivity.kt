@@ -22,6 +22,7 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.tasks.await
 import kotlinx.coroutines.withContext
 import ro.adi.agroadmin.R
 import ro.adi.agroadmin.data.Operation
@@ -79,42 +80,36 @@ class HomeActivity : AppCompatActivity() {
         }
     }
 
-    private fun fetchOperations(callback: (List<OperationChartDto>) -> Unit) {
+    private suspend fun fetchOperationsSafe(): List<OperationChartDto> = withContext(Dispatchers.IO) {
         val db = FirebaseFirestore.getInstance()
-        val username = FirebaseAuth.getInstance().currentUser?.email ?: return
+        val username = FirebaseAuth.getInstance().currentUser?.email ?: return@withContext emptyList()
 
         val operationsList = mutableListOf<OperationChartDto>()
 
-        Log.e("HomeActivity", "Fetching operations for user: $username")
+        val fieldDocs = db.collection("users").document(username).collection("fields").get().await()
+        Log.e("FieldDocs", "Fetched ${fieldDocs.size()} fields for user: $username")
+        for (fieldDoc in fieldDocs) {
+            val fieldName = fieldDoc.getString("name") ?: fieldDoc.id
+            val opsSnap = db.collection("users").document(username)
+                .collection("fields").document(fieldDoc.id)
+                .collection("operations")
+                .get()
+                .await()
 
-        db.collection("users").document(username).collection("fields")
-            .get()
-            .addOnSuccessListener { fieldDocs ->
-                val fieldTasks = fieldDocs.map { fieldDoc ->
-                    val fieldName = fieldDoc.getString("name") ?: fieldDoc.id
-                    db.collection("users").document(username)
-                        .collection("fields").document(fieldDoc.id)
-                        .collection("operations")
-                        .get()
-                        .addOnSuccessListener { opsSnap ->
-                            for (doc in opsSnap) {
-                                val type = doc.getString("type") ?: ""
-                                val cost = doc.getDouble("cost") ?: 0.0
-                                val revenue = doc.getDouble("revenue") ?: 0.0
-                                val currency = doc.getString("currency") ?: "RON"
-                                operationsList.add(OperationChartDto(type, cost,"","", revenue, fieldName,currency))
-                            }
-                        }
-                }
+            Log.e("OpsSnap", "Fetched ${opsSnap.size()} operations for field: $fieldName")
 
-                // Wait until all tasks are done
-                Tasks.whenAllSuccess<Void>(fieldTasks).addOnSuccessListener {
-                    callback(operationsList)
-                }
+            for (doc in opsSnap) {
+                val type = doc.getString("type") ?: ""
+                val cost = doc.getDouble("cost") ?: 0.0
+                val revenue = doc.getDouble("revenue") ?: 0.0
+                val currency = doc.getString("currency") ?: "RON"
+                operationsList.add(OperationChartDto(type, cost,"","", revenue, fieldName, currency))
             }
+        }
 
-        Log.e("HomeActivity", "Fetching operations for user: $username terminated")
+        return@withContext operationsList
     }
+
 
     private fun prepareChartData(
         operations: List<OperationChartDto>,
@@ -158,14 +153,17 @@ class HomeActivity : AppCompatActivity() {
                 val rates = withContext(Dispatchers.IO) {
                     CurrencyApi.getRates(this@HomeActivity, baseCurrency, currencyTo)
                 }
-                val rate = rates[currencyTo] ?: 1.0f
+                val rate = (rates[currencyTo] ?: 1.0f).toFloat()
                 Log.d("ChartUpdate", "Currency rate: $rate")
 
-                fetchOperations { operations ->
+                val operations = fetchOperationsSafe()
+                Log.d("ChartUpdate", "Fetched ${operations.size} operations")
+
+                if (operations.isNotEmpty()) {
                     val (labels, costData, revenueData) = prepareChartData(
                         operations,
                         groupByField = false,
-                        rate = rate.toFloat()
+                        rate = rate
                     )
                     setupChart(operationsChart, labels, costData, revenueData)
                 }
