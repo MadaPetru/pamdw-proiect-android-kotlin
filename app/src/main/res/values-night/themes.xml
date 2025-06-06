@@ -12,5 +12,6 @@
         <item name="colorHeaderText">@android:color/white</item>
         <item name="colorButtonBackground">?attr/selectableItemBackgroundBorderless</item>
         <item name="colorButtonTint">@android:color/white</item>
+        <item name="colorButtons">#66CDAA</item>
     </style>
 </resources>

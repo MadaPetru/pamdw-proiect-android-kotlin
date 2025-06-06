@@ -4,4 +4,5 @@
     <attr name="colorHeaderText" format="color" />
     <attr name="colorButtonBackground" format="color" />
     <attr name="colorButtonTint" format="color" />
+    <attr name="colorButtons" format="color" />
 </resources>
