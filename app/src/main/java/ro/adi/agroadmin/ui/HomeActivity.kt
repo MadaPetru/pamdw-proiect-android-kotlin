@@ -147,8 +147,10 @@ class HomeActivity : AppCompatActivity() {
                             rates[currency] = 1.0f
                         } else {
                             val apiRates = withContext(Dispatchers.IO) {
+                                Log.e("CurrencyApi", "Fetching rates for $currency to $currencyTo")
                                 CurrencyApi.getRates(this@HomeActivity, currency, currencyTo)
                             }
+                            Log.e("CurrencyApi", "Rate: $apiRates[$currencyTo]")
                             rates[currency] = (apiRates[currencyTo] ?: 1.0).toFloat()
                         }
                     }

@@ -36,7 +36,7 @@ object CurrencyApi {
         )
 
         return try {
-            val urlString = "$BASE_URL?apikey=$API_KEY&currencies=$currencyFrom,$currencyTo"
+            val urlString = "$BASE_URL?apikey=$API_KEY&currencies=$currencyTo&base_currency=$currencyFrom"
             val url = URL(urlString)
             val conn = url.openConnection() as HttpURLConnection
             conn.requestMethod = "GET"
